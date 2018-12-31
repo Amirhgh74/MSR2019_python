@@ -207,6 +207,19 @@ class LineMetric():
             return 0
         return len(sortedwords[-1])
 
+    def max_identifier(self): #works
+        result = []
+        keywords = [line.strip() for line in open('java_keywords.txt')]
+        words = re.findall(r"[_a-zA-Z][_a-zA-Z0-9]*", self.code, 0)
+        for word in words :
+            if word not in keywords :
+                result.append(word)
+        sortedwords = sorted(result, key=len)
+        if len(result) == 0:
+            return 0
+        return sortedwords[-1]
+    
+
     def avg_accolade(self): # number of { and (  --works
         char_dict = collections.Counter(self.code)
         result = char_dict['{']

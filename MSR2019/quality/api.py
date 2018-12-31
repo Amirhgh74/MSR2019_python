@@ -28,52 +28,75 @@ def qu(request):
         print ("No origin and edit found!")
         return HttpResponse(json.dumps({'token': '', 'success': False}))
 
-    # line_count_origin = origin.count('\n')
-    # # line_count_edit = edit.count('\n')
+    line_count_origin = origin.count('\n')
+    line_count_edit = edit.count('\n')
 
-    # metric_origin = LineMetric(origin , line_count_origin)
-    # # metric_edit = LineMetric(edit , line_count_edit)
+    metric_origin = LineMetric(origin , line_count_origin)
+    metric_edit = LineMetric(edit , line_count_edit)
 
-    # avg_line_length_origin = metric_origin.avg_line_length()
-    # # avg_line_length_edit = metric_edit.avg_line_length()
+    avg_line_length_origin = metric_origin.avg_line_length()
+    avg_line_length_edit = metric_edit.avg_line_length()
 
-    # max_line_len_origin = metric_origin.max_line_len()
-    # # max_line_len_edit = metric_edit.max_line_len()
+    max_line_len_origin = metric_origin.max_line_len()
+    max_line_len_edit = metric_edit.max_line_len()
 
-    # max_identifier_length_origin = metric_origin.max_identifier_length()
-    # # max_identifier_length_edit = metric_edit.max_identifier_length()
+    max_identifier_length_origin = metric_origin.max_identifier_length()
+    max_identifier_length_edit = metric_edit.max_identifier_length()
 
-    # avg_blank_lines_origin = metric_origin.avg_blank_lines()
-    # # avg_blank_lines_edit = metric_edit.avg_blank_lines()
+    max_identifier_origin = metric_origin.max_identifier()
+    max_identifier_edit = metric_edit.max_identifier()
 
-    # avg_indentation_origin = metric_origin.indentaion()
-    # # avg_indentation_edit = metric_edit.indentaion()
+    avg_blank_lines_origin = metric_origin.avg_blank_lines()
+    avg_blank_lines_edit = metric_edit.avg_blank_lines()
 
-    # max_indentations_origin = metric_origin.max_indentations()
-    # # max_indentations_edit = metric_edit.max_indentations()
+    avg_indentation_origin = metric_origin.indentaion()
+    avg_indentation_edit = metric_edit.indentaion()
 
-    # res = os.system("java -jar readability.jar")
-    # time.sleep(1)
-    # print("res = " + res)
-    # os.system(origin)
+    max_indentations_origin = metric_origin.max_indentations()
+    max_indentations_edit = metric_edit.max_indentations()
 
-    # call(["java", "-jar", "readability.jar", origin, "###"])
-    # result = subprocess.run(['java', '-jar', 'readability.jar', '\n', origin, '\n', '###'], stdout=subprocess.PIPE)
-    subprocess.call((
-        'java', 
-        '-jar',  
-        'readability.jar',
-        '\n',
-        origin,
-        '\n',
-        '###',
-    ))
-    # result = subprocess.run(['ls', '-l'], stdout=subprocess.PIPE)
-    # print('res = ' + str(result.stdout))
+    avg_comment_origin = metric_origin.num_comment()
+    avg_comment_edit = metric_edit.num_comment()
 
+    # send request to java and get the result : 
 
-
-
+    headers = {'Content-type': 'application/json'}
+    r = requests.post('http://localhost:8080/quality/', data = json.dumps({'origin':origin , 'edit': edit}) , headers = headers )
     
+    resultJson = json.load(r.json())
 
-    return HttpResponse(json.dumps({'token': '', 'success': True}))
+    originScore = resultJson["originScore"]
+    editScore = resultJson["editScore"]
+
+    jsonData = {}
+    origin_metric = {}
+    edit_metric = {}
+
+
+    origin_metric["score"] = originScore
+    origin_metric["lineCount"] = line_count_origin
+    origin_metric["avgLineLength"] = avg_line_length_origin
+    origin_metric["maxLineLength"] = max_line_len_origin
+    origin_metric["manxIdentifierLength"] =max_identifier_length_origin
+    origin_metric["maxIdentifier"] = max_identifier_origin
+    origin_metric["avgBlankLine"] = avg_blank_lines_origin
+    origin_metric["avgIndentation"] = avg_indentation_origin
+    origin_metric["maxIndentation"] = max_indentations_origin
+    origin_metric["avgComment"] = avg_comment_origin
+
+    jsonData["origin"] = origin_metric
+
+    edit_metric["score"] = editScore
+    edit_metric["lineCount"] = line_count_edit
+    edit_metric["avgLineLength"] = avg_line_length_edit
+    edit_metric["maxLineLength"] = max_line_len_edit
+    edit_metric["manxIdentifierLength"] =max_identifier_length_edit
+    edit_metric["maxIdentifier"] = max_identifier_edit
+    edit_metric["avgBlankLine"] = avg_blank_lines_edit
+    edit_metric["avgIndentation"] = avg_indentation_edit
+    edit_metric["maxIndentation"] = max_indentations_edit
+    edit_metric["avgComment"] = avg_comment_edit
+
+    jsonData["edit"] = edit_metric
+
+    return HttpResponse(json.dumps({'data': jsonData, 'success': False}))
